@@ -39,7 +39,7 @@ module Aquadoc
       @html_path = @base_path + '/' + @config[:github][:repo]
       @temp_library_path = @base_path + '/temp_library_path'
       @config_path = @base_path + '/config.json'
-      @assets_path = assets_path_from_load_path + '/assets'
+      #@assets_path = assets_path_from_load_path + '/assets'
     end
 
     def make_directories
@@ -55,24 +55,37 @@ module Aquadoc
 
       # Read in JSON category files and arrange the data into the above arrays
       @category_list.each do |data|
-        puts "data is #{data}"
-        data.each do |object|
-          puts "object is #{object}"
-          if object[:library]
-            @libraries.push object[:library]
-            @categories.push object[:library][:category]
-          else
-            @operation_type_specs.push object
-            @categories.push object[:operation_type][:category]
-            object[:sample_types].each do |sample_type|
-              @sample_types.push sample_type
-            end
-            object[:object_types].each do |object_type|
-              @object_types.push object_type
-            end
+#        puts "data is #{data}\n"
+        puts "========================="
+        # change object here to be "value"
+        # Then use object as what it is actually meant to be
+        #data.each do |key, object|
+        data.each do |key, value|
+          puts "DATA key is #{key}\n"
+          puts "++++++++++++++++++++++++++++"
+          if key == :config
+            next
           end
-        end
-      end
+          value.each do |object|
+            puts "object keys are #{object.keys}\n\n"
+#            puts "value is #{object}"
+            puts "******************"
+            if object[:library]
+              @libraries.push object[:library]
+              @categories.push object[:library][:category]
+            else
+              @operation_type_specs.push object
+              @categories.push object[:operation_type][:category]
+              object[:sample_types].each do |sample_type|
+                @sample_types.push sample_type
+              end # end sample type each 
+              object[:object_types].each do |object_type|
+                @object_types.push object_type
+              end # end object type each
+            end #end if else for if object[:library]
+          end #end value each do object
+        end # end data each k, v -> keys are components and config
+      end # end category list each do
 
       @categories = @categories.uniq.sort
       @sample_types = @sample_types.uniq.sort_by { |st| st[:name] }
@@ -80,8 +93,8 @@ module Aquadoc
       @libraries = @libraries.sort_by { |lib| lib[:name] }
       @operation_type_specs = @operation_type_specs.sort_by do |ots|
         ots[:operation_type][:name]
-      end
-    end
+      end #end local sort by
+    end #end method
 
     def make_md
       @categories.each do |c|
