@@ -55,21 +55,11 @@ module Aquadoc
 
       # Read in JSON category files and arrange the data into the above arrays
       @category_list.each do |data|
-#        puts "data is #{data}\n"
-        puts "========================="
-        # change object here to be "value"
-        # Then use object as what it is actually meant to be
-        #data.each do |key, object|
         data.each do |key, value|
-          puts "DATA key is #{key}\n"
-          puts "++++++++++++++++++++++++++++"
           if key == :config
             next
           end
           value.each do |object|
-            puts "object keys are #{object.keys}\n\n"
-#            puts "value is #{object}"
-            puts "******************"
             if object[:library]
               @libraries.push object[:library]
               @categories.push object[:library][:category]
@@ -120,6 +110,7 @@ module Aquadoc
       end
       category_specs.each do |ots|
         filename = sanitize_filename(ots[:operation_type][:name])
+        # this is where the next error is
         path = "operation_types/#{filename}.md"
         @storage.write(path, op_type_md(ots))
       end
