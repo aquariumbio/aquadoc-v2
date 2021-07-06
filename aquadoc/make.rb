@@ -39,6 +39,7 @@ module Aquadoc
       @html_path = @base_path + '/' + @config[:github][:repo]
       @temp_library_path = @base_path + '/temp_library_path'
       @config_path = @base_path + '/config.json'
+      @assets_path = @base_path + '/assets'
       #@assets_path = assets_path_from_load_path + '/assets'
     end
 
