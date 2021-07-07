@@ -22,7 +22,7 @@ module Aquadoc
       FileUtils.mkdir_p 'docs/sample_types'
       FileUtils.mkdir_p 'docs/object_types'
       FileUtils.mkdir_p 'docs/css'
-#      FileUtils.mkdir_p 'docs/js'
+      FileUtils.mkdir_p 'docs/js'
       aquadoc.make(@opts)
     end
 
