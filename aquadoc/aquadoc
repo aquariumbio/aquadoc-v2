@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 require 'json'
+require 'find'
 require_relative 'aquadoc'
 
 opts = {}
@@ -50,28 +51,51 @@ rescue StandardError => error
   raise "Could not find valid config file: #{error}"
 end
 
-puts config
-puts "reading files"
 categories = []
 
-Dir['categories/*.json'].each do |c|
-  file = File.read(c)
-  categories << JSON.parse(file, symbolize_names: true)
+# parsing for aq files
+#Dir['categories/*.json'].each do |c|
+#  file = File.read(c)
+#  categories << JSON.parse(file, symbolize_names: true)
+#end
+
+# parsing for pfish
+sample_types = []
+object_types = []
+libraries = []
+operation_types = []
+
+# TODO: add else with prune so it doesn't follow wrong paths
+# TODO: fix problem with two word keys in sample and object types
+# TODO: Save absolute path for libraries and operation types
+Find.find('categories') do |path|
+  if path.include? '.json'
+    file = File.read(path)
+    parsed = JSON.parse(file, symbolize_names: true)
+    if path.include? 'sample_types'
+      sample_types << parsed
+    elsif path.include? 'object_types'
+      object_types << parsed
+    elsif path.include? 'libraries'
+      libraries << {:path => path, :content => parsed}
+    elsif path.include? 'operation_types'
+      operation_types << {:path => path, :content => parsed}
+    end
+  end
 end
 
-puts "Reading in categories"
+
 ag = if opts[:local]
-       puts "calling local"
        Aquadoc::Local.new(config, categories, opts)
      else
-       puts "calling git"
        Aquadoc::Git.new(config, categories, opts)
      end
 
+# ag is an instance of the git class
+# run is called on the instance
 if ag.authorized
   ag.run
 else
   puts 'Could not authenticate with github'
 end
 
-puts "\n"
