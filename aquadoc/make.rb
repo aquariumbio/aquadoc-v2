@@ -8,6 +8,36 @@ module Aquadoc
   class Render
     attr_accessor :html_path
 
+    def initialize(storage, config, category_list)
+      @storage = storage # storage is an instance of the git class
+      @category_list = JSON.parse(category_list.to_json, symbolize_names: true)
+
+      default_config = {
+        title: 'No title specified',
+        description: 'No description given',
+        copyright: 'No copyright declared',
+        version: 'no version info',
+        authors: [],
+        maintainer: {
+          name: 'No maintainer',
+          email: 'noone@nowehere'
+        },
+        acknowledgements: [],
+        github: {
+          repo: 'none',
+          user: 'none',
+          access_token: 'none'
+        },
+        keywords: [],
+        aquadoc_version: Aquadoc.version
+      }
+
+      konfig = JSON.parse(config.to_json, symbolize_names: true)
+      @config = default_config.merge(konfig)
+
+      define_paths
+    end
+
     def sanitize_filename(filename)
       if filename
         fn = filename.split(/(?<=.)\.(?=[^.])(?!.*\.[^.])/m)
@@ -48,6 +78,7 @@ module Aquadoc
     end
 
     def make_parts
+      puts "make parts"
       @categories = []
       @sample_types = []
       @object_types = []
@@ -111,7 +142,8 @@ module Aquadoc
       end
       category_specs.each do |ots|
         filename = sanitize_filename(ots[:operation_type][:name])
-        # this is where the next error is
+        # calls write on instance of git class
+        # op_type_md is defined in render.rb
         path = "operation_types/#{filename}.md"
         @storage.write(path, op_type_md(ots))
       end
@@ -190,41 +222,13 @@ module Aquadoc
       @storage.write('config.json', @config.to_json)
     end
 
-    def initialize(storage, config, category_list)
-      @storage = storage
-      @category_list = JSON.parse(category_list.to_json, symbolize_names: true)
-
-      default_config = {
-        title: 'No title specified',
-        description: 'No description given',
-        copyright: 'No copyright declared',
-        version: 'no version info',
-        authors: [],
-        maintainer: {
-          name: 'No maintainer',
-          email: 'noone@nowehere'
-        },
-        acknowledgements: [],
-        github: {
-          repo: 'none',
-          user: 'none',
-          access_token: 'none'
-        },
-        keywords: [],
-        aquadoc_version: Aquadoc.version
-      }
-
-      konfig = JSON.parse(config.to_json, symbolize_names: true)
-      @config = default_config.merge(konfig)
-
-      define_paths
-    end
 
     def cleanup
       FileUtils.rm_rf(@html_path)
     end
 
     def make(opts = {})
+      puts "calling make with options #{opts}"
       @options = {
         inventory: true,
         libraries: true,
@@ -232,12 +236,12 @@ module Aquadoc
         yard_docs: true,
         init: true
       }.merge opts
-
-      make_directories
-      make_parts
+      # called on instance of the render class
+      make_directories # make temp_library_path
+      make_parts # parse json into arrays
       make_md
       make_about_md
-      make_index
+      make_index # in render
       make_yard_docs if @options[:yard_docs] && @options[:libraries]
       copy_assets
     end
