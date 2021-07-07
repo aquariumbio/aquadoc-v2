@@ -69,21 +69,36 @@ operation_types = []
 # TODO: fix problem with two word keys in sample and object types
 # TODO: Save absolute path for libraries and operation types
 Find.find('categories') do |path|
-  if path.include? '.json'
-    file = File.read(path)
-    parsed = JSON.parse(file, symbolize_names: true)
-    if path.include? 'sample_types'
-      sample_types << parsed
-    elsif path.include? 'object_types'
-      object_types << parsed
+    if path.include? 'sample_types' and path.include? '.json'
+      file = File.read(path)
+      sample_types << JSON.parse(file, symbolize_names: true)
+    elsif path.include? 'object_types' and path.include? '.json'
+      file = File.read(path)
+      object_types << JSON.parse(file, symbolize_names: true)
     elsif path.include? 'libraries'
-      libraries << {:path => path, :content => parsed}
+        if path.include? 'definition'
+          file = File.read(path)
+          definitions = JSON.parse(file, symbolize_names: true)
+        elsif path.include? 'source'
+          source = File.read(path)
+        else
+          next
+        end
+      libraries << {:definitions => definitions, :source => source, :path => path}
     elsif path.include? 'operation_types'
-      operation_types << {:path => path, :content => parsed}
+      if path.include? 'definition'
+        file = File.read(path)
+        definitions = JSON.parse(file, symbolize_names: true)
+      elsif path.include? 'protocol'
+        protocol = File.read(path)
+      elsif path.include? 'precondition'
+        precondition = File.read(path)
+      else
+        next
+      end
+      operation_types << {:path => path, :definition => definitions, :protocol => protocol, :precondition => precondition}
     end
   end
-end
-
 
 ag = if opts[:local]
        Aquadoc::Local.new(config, categories, opts)
